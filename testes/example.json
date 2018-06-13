@@ -1,0 +1,27 @@
+[
+  {
+    "car": "Audi",
+    "price": 40000,
+    "color": "blue",
+    "info": {
+      "id": "111-AAAA",
+      "year": "2018"
+    }
+  }, {
+    "car": "BMW",
+    "price": 35000,
+    "color": "black",
+    "info": {
+      "id": "234-OVRA",
+      "year": "2015"
+    }
+  }, {
+    "car": "Porsche",
+    "price": 60000,
+    "color": "green",
+    "info": {
+      "id": "666-XXXX",
+      "year": "2014"
+    }
+  }
+];

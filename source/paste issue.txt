@@ -1,0 +1,31 @@
+File 1	 File 2	 File3 File4
+
+A	 1	 X	 7	
+B	 2	 Y	 8
+C	 3	 9
+D	 4	 10
+E	 5
+6
+
+
+Desired Output
+
+Final File
+
+Column1	Column2	Column3	Column4
+A	 1	 X	 7	
+B	 2	 Y	 8
+C	 3	 	 9
+D	 4	         10
+E	 5
+	 6
+
+Current Output
+
+Column1	Column2	Column3	Column4
+A	 1	 X	 7	
+B	 2	 Y	 8
+C	 3	 9
+D	 4	 10
+E	 5
+6

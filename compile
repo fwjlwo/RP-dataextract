@@ -1,0 +1,126 @@
+const fs = require('fs');
+const Json2csvTransform = require('json2csv').Transform;
+const Json2csvParser = require('json2csv').Parser;
+const Readable = require('stream').Readable;
+const source_dir = './source/';
+const base_dir = './out/';
+const output_dir = "./compiled/";
+
+var DELIMITER = ',';
+var argv_index = 2;
+
+// seleciona o delimitador
+if( process.argv[argv_index].indexOf('-') == 0) {
+	switch(process.argv[argv_index++][1]) {
+		case 'd':
+			DELIMITER = process.argv[argv_index++].trim();
+			break;
+	}
+}
+
+// pega o nome do candidato como argumento
+const baseName = process.argv[argv_index];
+
+// diretório de entrada
+const dirName = base_dir + baseName + '/';
+
+
+const files = [
+	dirName + baseName + '_info_list.csv',
+	dirName + baseName + '_pres.csv',
+	dirName + baseName + '_priv.csv',
+	dirName + baseName + '_priv_list.csv',
+	dirName + baseName + '_proc.csv',
+	dirName + baseName + '_proc_list.csv',
+	dirName + baseName + '_outr.csv',
+	dirName + baseName + '_outr_list.csv',
+	dirName + baseName + '_legs.csv',
+	dirName + baseName + '_legs_list.csv'
+]
+//const files = process.argv.slice(argv_index, process.argv.length);
+
+// diretório dos arquivos de saída
+const outputName = output_dir + baseName + '.csv';
+
+//
+files.forEach(function(v,i,a) {
+	console.log(v);
+});
+
+// posição da coluna
+const colPosition = 0;
+var baseString = '';
+
+
+// pega os streams dos arquivos e os converte em strings
+function streamToString(stream, cb) {
+  const chunks = [];
+  stream.on('data', (chunk) => {
+    chunks.push(chunk.toString());
+  });
+  stream.on('end', () => {
+    cb(chunks.join(''));
+  });
+}
+
+if(files.length < 2) // se não tiver mais de um arquivo, ou não for do formato .csv, sai do programa
+	process.exit();
+
+if(files[0].split('.').pop() != 'csv'){
+	throw new Error('Erro: '+ files[0] +' não é um arquivo suportado (utilize .csv)');
+	process.exit();
+}
+// carrega o stream
+var curr_file = files.shift()
+const input = fs.createReadStream( curr_file, { encoding: 'utf8' });
+
+var iteracao = 0;
+
+// função recursiva que concatena os strings
+const pasteStreams = function(str) {
+
+	iteracao++;
+	console.log("iteração "+iteracao);
+	//
+	var lbase = baseString.trim().split('\n');
+	var lstring = str.trim().split('\n');
+	var tmpString = '';
+
+	// pega o numero de colunas
+	var npos1 = (lbase[0].replace(/"[^"]*"/g, '').match( new RegExp(DELIMITER, "g") ) || []).length;
+	var padding1 = Array(npos1+1).join(DELIMITER);
+	console.log("String base 1: " + lbase[0]);
+	console.log("padding1: "+ padding1);
+	//
+	var npos2 = (lstring[0].replace(/"[^"]*"/g, '').match( new RegExp(DELIMITER, "g") ) || []).length;
+	var padding2 = Array(npos2+1).join(DELIMITER);
+	console.log("String base 2: " + lstring[0]);
+	console.log("padding2: "+ padding2);
+
+	//
+	for(var i = 0, l1, l2; i < Math.max(lbase.length,lstring.length); ++i) {
+		l1 = (i < lbase.length) ? lbase[i] : padding1;
+		l2 = (i < lstring.length) ? lstring[i] : padding2;
+		tmpString += l1 + DELIMITER + l2 + "\n";
+	}
+
+	// assimila
+	baseString = tmpString;
+
+	console.log("concatenou " + curr_file);
+
+	// testa se o algoritmo continua
+	if(files.length) {
+		var curr_file = files.shift();
+		const input = fs.createReadStream( curr_file, { encoding: 'utf8' });
+		//
+		streamToString(input, pasteStreams);
+	} else {
+		const out = fs.createWriteStream( outputName, { encoding: 'utf8' });
+		out.write(baseString, 'utf-8');
+	}
+
+}
+
+// inicia o processo dos streams
+streamToString(input, pasteStreams);
