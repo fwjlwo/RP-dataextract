@@ -1,2 +1,6 @@
-compiled/
-out/
+compiled/*
+out/*
+
+# exception to the rule
+!compiled/.gitkeep 
+!out/.gitkeep 
